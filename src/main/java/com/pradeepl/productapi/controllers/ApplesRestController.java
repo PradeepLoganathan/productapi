@@ -2,10 +2,9 @@ package com.pradeepl.productapi.controllers;
 
 import com.pradeepl.productapi.models.Product;
 import com.pradeepl.productapi.repositories.ProductRepository;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import com.pradeepl.productapi.DatabaseService;
+import org.webjars.NotFoundException;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,12 +20,30 @@ public class ApplesRestController {
         return databaseService.getAwsRDSkey();
     }
 
-    @GetMapping("/findbyid/{id}")
-    public Optional<Product> getProduct (@PathVariable int id) {
-        Optional<Product> product = productRepository.findById(id);
+    @GetMapping("/products/{id}")
+    public Product one(@PathVariable Integer id) throws Exception {
 
-        return product;
+        return productRepository.findById(id)
+                .orElseThrow(() -> new Exception());
     }
 
+    @PutMapping("/products/{id}")
+    public Product replaceEmployee(@RequestBody Product newProduct, @PathVariable Integer id) {
+
+        return productRepository.findById(id)
+                .map(employee -> {
+                    employee.setName(newProduct.getName());
+                    employee.setPrice(newProduct.getPrice());
+                    return productRepository.save(employee);
+                })
+                .orElseGet(() -> {
+                    return productRepository.save(newProduct);
+                });
+    }
+
+    @GetMapping("/products")
+    public List<Product> all() {
+        return productRepository.findAll();
+    }
 
 }
